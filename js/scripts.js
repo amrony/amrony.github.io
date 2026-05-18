@@ -1,42 +1,61 @@
-/*!
-    * Start Bootstrap - Resume v6.0.1 (https://startbootstrap.com/template-overviews/resume)
-    * Copyright 2013-2020 Start Bootstrap
-    * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-resume/blob/master/LICENSE)
-    */
-    (function ($) {
-    "use strict"; // Start of use strict
+const menuToggle = document.querySelector(".menu-toggle");
+const siteNav = document.querySelector(".site-nav");
+const navLinks = document.querySelectorAll(".site-nav a");
 
-    // Smooth scrolling using jQuery easing
-    $('a.js-scroll-trigger[href*="#"]:not([href="#"])').click(function () {
-        if (
-            location.pathname.replace(/^\//, "") ==
-                this.pathname.replace(/^\//, "") &&
-            location.hostname == this.hostname
-        ) {
-            var target = $(this.hash);
-            target = target.length
-                ? target
-                : $("[name=" + this.hash.slice(1) + "]");
-            if (target.length) {
-                $("html, body").animate(
-                    {
-                        scrollTop: target.offset().top,
-                    },
-                    1000,
-                    "easeInOutExpo"
-                );
-                return false;
-            }
-        }
+if (menuToggle && siteNav) {
+    menuToggle.addEventListener("click", () => {
+        const isOpen = siteNav.classList.toggle("is-open");
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
     });
 
-    // Closes responsive menu when a scroll trigger link is clicked
-    $(".js-scroll-trigger").click(function () {
-        $(".navbar-collapse").collapse("hide");
+    navLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+            siteNav.classList.remove("is-open");
+            menuToggle.setAttribute("aria-expanded", "false");
+        });
     });
+}
 
-    // Activate scrollspy to add active class to navbar items on scroll
-    $("body").scrollspy({
-        target: "#sideNav",
-    });
-})(jQuery); // End of use strict
+const sections = [...document.querySelectorAll("section[id]")];
+
+if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                navLinks.forEach((link) => {
+                    link.classList.toggle("active", link.getAttribute("href") === `#${entry.target.id}`);
+                });
+            });
+        },
+        { rootMargin: "-30% 0px -60% 0px" }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+}
+
+const revealItems = document.querySelectorAll(
+    ".section-heading, .feature-tile, .timeline-item, .project-card, .skill-board article, .note-card, .contact-section"
+);
+
+revealItems.forEach((item, index) => {
+    item.classList.add("reveal");
+    item.style.transitionDelay = `${Math.min(index % 4, 3) * 80}ms`;
+});
+
+if ("IntersectionObserver" in window) {
+    const revealObserver = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add("is-visible");
+                revealObserver.unobserve(entry.target);
+            });
+        },
+        { threshold: 0.14 }
+    );
+
+    revealItems.forEach((item) => revealObserver.observe(item));
+} else {
+    revealItems.forEach((item) => item.classList.add("is-visible"));
+}
